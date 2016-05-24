@@ -1,0 +1,19 @@
+{
+    "name": "laracademy/generators",
+    "description": "This package will generate a Laravel Model based on your database table itself, filling in the required fields automatically.",
+    "keywords": ["laravel", "generators"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael McMullen",
+            "email": "michael@laracademy.co"
+        }
+    ],
+    "require": {},
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+          "Laracademy\\Generators\\": "src/"
+        }
+    }
+}
