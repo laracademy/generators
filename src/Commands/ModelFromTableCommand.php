@@ -3,8 +3,8 @@
 namespace Laracademy\Generators\Commands;
 
 use DB;
-use Schema;
 use Illuminate\Console\Command;
+use Schema;
 
 class ModelFromTableCommand extends Command
 {
@@ -26,17 +26,16 @@ class ModelFromTableCommand extends Command
      */
     protected $description = 'Generate models for the given tables based on their columns';
 
-    var $fieldsFillable;
-    var $fieldsHidden;
-    var $fieldsCast;
-    var $fieldsDate;
-    var $columns;
+    public $fieldsFillable;
+    public $fieldsHidden;
+    public $fieldsCast;
+    public $fieldsDate;
+    public $columns;
 
-    var $debug;
-    var $options;
+    public $debug;
+    public $options;
 
-
-    var $databaseConnection;
+    public $databaseConnection;
 
     /**
      * Create a new command instance.
@@ -49,9 +48,9 @@ class ModelFromTableCommand extends Command
 
         $this->options = [
             'connection' => '',
-            'table' => '',
-            'debug' => false,
-            'all' => false,
+            'table'      => '',
+            'debug'      => false,
+            'all'        => false,
         ];
     }
 
@@ -70,20 +69,21 @@ class ModelFromTableCommand extends Command
         $this->getOptions();
 
         // can we run?
-        if(strlen($this->options['table']) <= 0 && $this->options['all'] == false) {
+        if (strlen($this->options['table']) <= 0 && $this->options['all'] == false) {
             $this->error('No --table specified or --all');
+
             return;
         }
 
         // figure out if it is all tables
-        if($this->options['all']) {
+        if ($this->options['all']) {
             $tables = $this->getAllTables();
         } else {
             $tables = explode(',', $this->options['table']);
         }
 
         // cycle through each table
-        foreach($tables as $table) {
+        foreach ($tables as $table) {
             // grab a fresh copy of our stub
             $stub = $modelStub;
 
@@ -93,13 +93,13 @@ class ModelFromTableCommand extends Command
             $this->doComment("Generating file: $filename.php");
 
             // gather information on it
-            $model = array(
+            $model = [
                 'table'     => $table,
                 'fillable'  => $this->getSchema($table),
-                'guardable' => array(),
-                'hidden'    => array(),
-                'casts'     => array(),
-            );
+                'guardable' => [],
+                'hidden'    => [],
+                'casts'     => [],
+            ];
 
             // fix these up
             $columns = $this->describeTable($table);
@@ -107,10 +107,10 @@ class ModelFromTableCommand extends Command
             // use a collection
             $this->columns = collect();
 
-            foreach($columns as $col) {
+            foreach ($columns as $col) {
                 $this->columns->push([
                     'field' => $col->Field,
-                    'type' => $col->Type,
+                    'type'  => $col->Type,
                 ]);
             }
 
@@ -124,7 +124,7 @@ class ModelFromTableCommand extends Command
             $stub = $this->replaceConnection($stub, $this->options['connection']);
 
             // writing stub out
-            $this->doComment('Writing model: '. $fullPath, true);
+            $this->doComment('Writing model: '.$fullPath, true);
             file_put_contents($fullPath, $stub);
         }
 
@@ -133,9 +133,9 @@ class ModelFromTableCommand extends Command
 
     public function getSchema($tableName)
     {
-        $this->doComment('Retrieving table definition for: '. $tableName);
+        $this->doComment('Retrieving table definition for: '.$tableName);
 
-        if(strlen($this->options['connection']) <= 0) {
+        if (strlen($this->options['connection']) <= 0) {
             return Schema::getColumnListing($tableName);
         } else {
             return Schema::connection($this->options['connection'])->getColumnListing($tableName);
@@ -144,20 +144,22 @@ class ModelFromTableCommand extends Command
 
     public function describeTable($tableName)
     {
-        $this->doComment('Retrieving column information for : '. $tableName);
+        $this->doComment('Retrieving column information for : '.$tableName);
 
-        if(strlen($this->options['connection']) <= 0) {
-            return DB::select(DB::raw('describe '. $tableName));
+        if (strlen($this->options['connection']) <= 0) {
+            return DB::select(DB::raw('describe '.$tableName));
         } else {
-            return DB::connection($this->options['connection'])->select(DB::raw('describe '. $tableName));
+            return DB::connection($this->options['connection'])->select(DB::raw('describe '.$tableName));
         }
     }
 
     /**
-     * replaces the class name in the stub
-     * @param  string $stub      stub content
-     * @param  string $tableName the name of the table to make as the class
-     * @return string            stub content
+     * replaces the class name in the stub.
+     *
+     * @param string $stub      stub content
+     * @param string $tableName the name of the table to make as the class
+     *
+     * @return string stub content
      */
     public function replaceClassName($stub, $tableName)
     {
@@ -165,10 +167,12 @@ class ModelFromTableCommand extends Command
     }
 
     /**
-     * replaces the module information
-     * @param  string $stub             stub content
-     * @param  array $modelInformation  array (key => value)
-     * @return string                   stub content
+     * replaces the module information.
+     *
+     * @param string $stub             stub content
+     * @param array  $modelInformation array (key => value)
+     *
+     * @return string stub content
      */
     public function replaceModuleInformation($stub, $modelInformation)
     {
@@ -179,33 +183,32 @@ class ModelFromTableCommand extends Command
         $this->fieldsHidden = '';
         $this->fieldsFillable = '';
         $this->fieldsCast = '';
-        foreach($modelInformation['fillable'] as $field)
-        {
+        foreach ($modelInformation['fillable'] as $field) {
             // fillable and hidden
-            if($field != 'id' && $field != 'created_at' && $field != 'updated_at') {
-                $this->fieldsFillable .= (strlen($this->fieldsFillable) > 0 ? ', ' : '') ."'$field'";
+            if ($field != 'id' && $field != 'created_at' && $field != 'updated_at') {
+                $this->fieldsFillable .= (strlen($this->fieldsFillable) > 0 ? ', ' : '')."'$field'";
 
                 $fieldsFiltered = $this->columns->where('field', $field);
-                if($fieldsFiltered) {
+                if ($fieldsFiltered) {
                     // check type
-                    switch(strtolower($fieldsFiltered->first()['type'])) {
+                    switch (strtolower($fieldsFiltered->first()['type'])) {
                         case 'timestamp':
-                            $this->fieldsDate .= (strlen($this->fieldsDate) > 0 ? ', ' : '') ."'$field'";
+                            $this->fieldsDate .= (strlen($this->fieldsDate) > 0 ? ', ' : '')."'$field'";
                             break;
                         case 'datetime':
-                            $this->fieldsDate .= (strlen($this->fieldsDate) > 0 ? ', ' : '') ."'$field'";
+                            $this->fieldsDate .= (strlen($this->fieldsDate) > 0 ? ', ' : '')."'$field'";
                             break;
                         case 'date':
-                            $this->fieldsDate .= (strlen($this->fieldsDate) > 0 ? ', ' : '') ."'$field'";
+                            $this->fieldsDate .= (strlen($this->fieldsDate) > 0 ? ', ' : '')."'$field'";
                             break;
                         case 'tinyint(1)':
-                            $this->fieldsCast .= (strlen($this->fieldsCast) > 0 ? ', ' : '') ."'$field' => 'boolean'";
+                            $this->fieldsCast .= (strlen($this->fieldsCast) > 0 ? ', ' : '')."'$field' => 'boolean'";
                             break;
                     }
                 }
             } else {
-                if($field != 'id' && $field != 'created_at' && $field != 'updated_at') {
-                    $this->fieldsHidden .= (strlen($this->fieldsHidden) > 0 ? ', ' : '') ."'$field'";
+                if ($field != 'id' && $field != 'created_at' && $field != 'updated_at') {
+                    $this->fieldsHidden .= (strlen($this->fieldsHidden) > 0 ? ', ' : '')."'$field'";
                 }
             }
         }
@@ -226,9 +229,9 @@ class ModelFromTableCommand extends Command
      *
      * @var string
      */
-    protected $connection = \''. $database .'\'';
+    protected $connection = \''.$database.'\'';
 
-        if(strlen($database) <= 0) {
+        if (strlen($database) <= 0) {
             $stub = str_replace('{{connection}}', '', $stub);
         } else {
             $stub = str_replace('{{connection}}', $replacementString, $stub);
@@ -238,7 +241,7 @@ class ModelFromTableCommand extends Command
     }
 
     /**
-     * returns the stub to use to generate the class
+     * returns the stub to use to generate the class.
      */
     public function getStub()
     {
@@ -248,7 +251,7 @@ class ModelFromTableCommand extends Command
     }
 
     /**
-     * returns all the options that the user specified
+     * returns all the options that the user specified.
      */
     public function getOptions()
     {
@@ -263,29 +266,29 @@ class ModelFromTableCommand extends Command
     }
 
     /**
-     * will add a comment to the screen if debug is on, or is over-ridden
+     * will add a comment to the screen if debug is on, or is over-ridden.
      */
     public function doComment($text, $overrideDebug = false)
     {
-        if($this->options['debug'] || $overrideDebug) {
+        if ($this->options['debug'] || $overrideDebug) {
             $this->comment($text);
         }
     }
 
     /**
-     * will return an array of all table names
+     * will return an array of all table names.
      */
     public function getAllTables()
     {
         $tables = [];
 
-        if(strlen($this->options['connection']) <= 0) {
+        if (strlen($this->options['connection']) <= 0) {
             $tables = collect(DB::select(DB::raw('show tables')))->flatten();
         } else {
             $tables = collect(DB::connection($this->options['connection'])->select(DB::raw('show tables')))->flatten();
         }
 
-        $tables = $tables->map(function($value, $key) {
+        $tables = $tables->map(function ($value, $key) {
             return collect($value)->flatten()[0];
         })->reject(function ($value, $key) {
             return $value == 'migrations';
@@ -293,5 +296,4 @@ class ModelFromTableCommand extends Command
 
         return $tables;
     }
-
 }

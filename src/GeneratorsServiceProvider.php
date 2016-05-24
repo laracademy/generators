@@ -1,16 +1,16 @@
-<?php namespace Laracademy\Generators;
+<?php
 
-/**
+namespace Laracademy\Generators;
+
+/*
  *
  * @author Michael McMullen <michael@laracademy.co>
  */
 
-use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 
-class GeneratorsServiceProvider extends ServiceProvider{
-
-
+class GeneratorsServiceProvider extends ServiceProvider
+{
     /**
      * Indicates if loading of the provider is deferred.
      *
@@ -23,7 +23,6 @@ class GeneratorsServiceProvider extends ServiceProvider{
         //
     }
 
-
     public function register()
     {
         $this->registerModelGenerator();
@@ -31,7 +30,7 @@ class GeneratorsServiceProvider extends ServiceProvider{
 
     private function registerModelGenerator()
     {
-        $this->app->singleton('command.laracademy.generate', function($app) {
+        $this->app->singleton('command.laracademy.generate', function ($app) {
             return $app['Laracademy\Generators\Commands\ModelFromTableCommand'];
         });
 
