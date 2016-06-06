@@ -1,8 +1,8 @@
-# Model Generator
+# Laracademy Generators
 
 [![Latest Stable Version](https://poser.pugx.org/laracademy/generators/v/stable)](https://packagist.org/packages/laracademy/generators) [![Total Downloads](https://poser.pugx.org/laracademy/generators/downloads)](https://packagist.org/packages/laracademy/generators) [![Latest Unstable Version](https://poser.pugx.org/laracademy/generators/v/unstable)](https://packagist.org/packages/laracademy/model-generator) [![License](https://poser.pugx.org/laracademy/model-generator/license)](https://packagist.org/packages/laracademy/generators)
 
-**Laracademy Generators** - is a set of generators that will help speed up your development.
+**Laracademy Generators** - is a tool set that helps speed up the development process of a Laravel application.
 
 **Author(s):**
 * [Laracademy](https://laracademy.co) ([@laracademy](http://twitter.com/laracademy), michael@laracademy.co)
@@ -10,11 +10,7 @@
 ## Requirements
 
 1. PHP 5.6+
-3. Laravel 5.2+
-
-Will read your current table structure and generate a model will the filled in fields automatically.
-
-You can generate a single table model, or multiple at once.
+2. Laravel 5.2+
 
 ## Usage
 
@@ -41,7 +37,7 @@ public function register()
     }
 ```
 
-### Artisan
+### Step 3: Artisan Command
 Now that we have added the generator to our project the last thing to do is run Laravel's Arisan command
 
 ```
@@ -54,16 +50,30 @@ You will see the following in the list
 generate:modelfromtable
 ```
 
-The command comes with a bunch of different options and they are listed below
+## Commands
 
- * --table=
-  * this can either be a single table, or a list of tables separated by a comma
- * --all
-  * this will ignore any tables that you have added and generate a full list of tables within your database to generate models for
-  * please note that this command will only ignore the `migrations` table and no model will be generate for it
- * --connection=
-  *
- * --debug
+### generate:modelfromtable
+
+This command will read your database table and generate a model based on that table structure. The fillable fields, casts, dates and even namespacing will be filled in automatically.
+
+You can use this command to generate a single table, multiple tables or all of your tables at once.
+
+This command comes with a bunch of different options, please see below for each parameter
+
+* --table=
+  * This parameter if filled in will generate a model for the given table.
+   * You can also pass in a list of tables using comma separated values.
+* --all
+  * If this flag is present, then the table command will be ignored.
+   * This will generate a model for **all** tables found in your database.
+   * _please note that this command will only ignore the `migrations` table and no model will be generate for it_
+* --connection=
+  * by default if this option is omitted then the generate will use the default connection found in `config/database.php`
+  * To specify a connection ensure that it exists in your `config/database.php` first.
+* --folder=
+  * by default all models are store in your _app/_ directory. If you wish to store them in another place you can provide the relative path from your base laravel application.
+  * please see examples for more information
+* --debug
   * this shows some more information while running
 
 ## Examples
@@ -90,6 +100,12 @@ php artisan generate:modelfromtable --all
 
 ```
 php artisan generate:modelfromtable --connection=spark --all
+```
+
+### Changing the folder where to /app/Models
+
+```
+php artisan generate:modelfromtable --table=user --folder=app\Models
 ```
 
 ## License
