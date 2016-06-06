@@ -1,6 +1,6 @@
 # Laracademy Generators
 
-[![Latest Stable Version](https://poser.pugx.org/laracademy/generators/v/stable)](https://packagist.org/packages/laracademy/generators) [![Total Downloads](https://poser.pugx.org/laracademy/generators/downloads)](https://packagist.org/packages/laracademy/generators) [![Latest Unstable Version](https://poser.pugx.org/laracademy/generators/v/unstable)](https://packagist.org/packages/laracademy/model-generator) [![License](https://poser.pugx.org/laracademy/model-generator/license)](https://packagist.org/packages/laracademy/generators)
+[![Latest Stable Version](https://poser.pugx.org/laracademy/generators/v/stable)](https://packagist.org/packages/laracademy/generators) [![Total Downloads](https://poser.pugx.org/laracademy/generators/downloads)](https://packagist.org/packages/laracademy/generators) [![Latest Unstable Version](https://poser.pugx.org/laracademy/generators/v/unstable)](https://packagist.org/packages/laracademy/generators) [![License](https://poser.pugx.org/laracademy/generators/license)](https://packagist.org/packages/laracademy/generators)
 
 **Laracademy Generators** - is a tool set that helps speed up the development process of a Laravel application.
 
@@ -17,14 +17,14 @@
 ### Step 1: Install through Composer
 
 ```
-composer require "laracademy/model-generator"
+composer require "laracademy/generators"
 ```
 
 ### Step 2: Add the Service Provider
 The easiest method is to add the following into your `config/app.php` file
 
 ```php
-Laracademy\ModelGenerator\ModelGeneratorServiceProvider::class
+Laracademy\Generators\GeneratorsServiceProvider::class
 ```
 
 Depending on your set up you may want to only use these providers for development, so you don't update your `production` servers. Instead, add the provider in `app/Providers/AppServiceProvider.php' like so
@@ -33,7 +33,7 @@ Depending on your set up you may want to only use these providers for developmen
 public function register()
 {
     if($this->app->environment() == 'local') {
-        $this->app->register('\Laracademy\ModelGenerator\ModelGeneratorServiceProvider');
+        $this->app->register('\Laracademy\Generators\GeneratorsServiceProvider');
     }
 ```
 
