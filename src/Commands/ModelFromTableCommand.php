@@ -17,6 +17,7 @@ class ModelFromTableCommand extends Command
                             {--table= : a single table or a list of tables separated by a comma (,)}
                             {--connection= : database connection to use, leave off and it will use the .env connection}
                             {--debug : turns on debugging}
+                            {--folder= : by default models are stored in app, but you can change that}
                             {--all : run for all tables}';
 
     /**
@@ -49,6 +50,7 @@ class ModelFromTableCommand extends Command
         $this->options = [
             'connection' => '',
             'table'      => '',
+            'folder'     => app_path(),
             'debug'      => false,
             'all'        => false,
         ];
@@ -61,12 +63,12 @@ class ModelFromTableCommand extends Command
      */
     public function handle()
     {
-        $tables = [];
-        $path = app_path();
-        $modelStub = file_get_contents($this->getStub());
-
         $this->doComment('Starting Model Generate Command', true);
         $this->getOptions();
+
+        $tables = [];
+        $path = $this->options['folder'];
+        $modelStub = file_get_contents($this->getStub());
 
         // can we run?
         if (strlen($this->options['table']) <= 0 && $this->options['all'] == false) {
@@ -218,6 +220,7 @@ class ModelFromTableCommand extends Command
         $stub = str_replace('{{hidden}}', $this->fieldsHidden, $stub);
         $stub = str_replace('{{casts}}', $this->fieldsCast, $stub);
         $stub = str_replace('{{dates}}', $this->fieldsDate, $stub);
+        $stub = str_replace('{{modelnamespace}}', $this->options['namespace'], $stub);
 
         return $stub;
     }
@@ -259,6 +262,16 @@ class ModelFromTableCommand extends Command
         $this->options['debug'] = ($this->option('debug')) ? true : false;
         // connection
         $this->options['connection'] = ($this->option('connection')) ? $this->option('connection') : '';
+        // folder
+        $this->options['folder'] = ($this->option('folder')) ? base_path($this->option('folder')) : app_path();
+        // trim trailing slashes
+        $this->options['folder'] = rtrim($this->options['folder'], '/');
+        // namespace
+        $this->options['namespace'] = ($this->option('folder')) ? str_replace('app', 'App', $this->option('folder')) : 'App';
+        // remove trailing slash if exists
+        $this->options['namespace'] = rtrim($this->options['namespace'], '/');
+        // fix slashes
+        $this->options['namespace'] = str_replace('/', '\\', $this->options['namespace']);
         // all tables
         $this->options['all'] = ($this->option('all')) ? true : false;
         // single or list of tables
