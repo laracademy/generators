@@ -35,6 +35,7 @@ public function register()
     if($this->app->environment() == 'local') {
         $this->app->register('\Laracademy\Generators\GeneratorsServiceProvider');
     }
+}
 ```
 
 ### Step 3: Artisan Command
