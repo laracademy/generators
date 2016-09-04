@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class {{class}} extends Model  {
 
+    {{connection}}
+
     /**
      * The database table used by the model.
      *
