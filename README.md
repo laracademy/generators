@@ -74,6 +74,9 @@ This command comes with a bunch of different options, please see below for each 
 * --folder=
   * by default all models are store in your _app/_ directory. If you wish to store them in another place you can provide the relative path from your base laravel application.
   * please see examples for more information
+* --namespace=
+  * by default all models will have the namespace of App
+  * you can change the namespace by adding this option
 * --debug
   * this shows some more information while running
 
