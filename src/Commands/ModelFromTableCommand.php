@@ -261,20 +261,25 @@ class ModelFromTableCommand extends Command
     {
         // debug
         $this->options['debug'] = ($this->option('debug')) ? true : false;
+
         // connection
         $this->options['connection'] = ($this->option('connection')) ? $this->option('connection') : '';
+
         // folder
         $this->options['folder'] = ($this->option('folder')) ? base_path($this->option('folder')) : app_path();
         // trim trailing slashes
         $this->options['folder'] = rtrim($this->options['folder'], '/');
+
         // namespace
-        $this->options['namespace'] = ($this->option('folder')) ? str_replace('app', 'App', $this->option('folder')) : 'App';
+        $this->options['namespace'] = ($this->option('namespace')) ? str_replace('app', 'App', $this->option('namespace')) : 'App';
         // remove trailing slash if exists
         $this->options['namespace'] = rtrim($this->options['namespace'], '/');
         // fix slashes
         $this->options['namespace'] = str_replace('/', '\\', $this->options['namespace']);
+
         // all tables
         $this->options['all'] = ($this->option('all')) ? true : false;
+
         // single or list of tables
         $this->options['table'] = ($this->option('table')) ? $this->option('table') : '';
     }
