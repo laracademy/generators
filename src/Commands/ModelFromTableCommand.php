@@ -18,7 +18,7 @@ class ModelFromTableCommand extends Command
                             {--connection= : database connection to use, leave off and it will use the .env connection}
                             {--debug : turns on debugging}
                             {--folder= : by default models are stored in app, but you can change that}
-                            {--namepsace= : by default the namespace that will be applied to all models is App}
+                            {--namespace= : by default the namespace that will be applied to all models is App}
                             {--all : run for all tables}';
 
     /**
