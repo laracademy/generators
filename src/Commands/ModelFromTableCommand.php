@@ -353,9 +353,9 @@ class ModelFromTableCommand extends Command
     public function getAllTables($schema = 'public')
     {
         if ($schema === '') {
-            return [] ;
+            return [];
         }
-        
+
         $tables = [];
         $sql = "SELECT '".$schema.".'||table_name FROM information_schema.columns WHERE table_schema = '".$schema."'";
 
