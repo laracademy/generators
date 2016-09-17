@@ -69,6 +69,14 @@ class ModelFromTableCommand extends Command
         $this->doComment('Starting Model Generate Command', true);
         $this->getOptions();
 
+        if ($this->options['schema'] === '') {
+            if ($this->getDriverName() === 'pgsql') {
+                $this->options['schema'] = $this->getTablePrefix();
+            } else {
+                $this->options['schema'] = $this->getDatabaseName();
+            }
+        }
+
         $tables = [];
         $path = $this->options['folder'];
         $modelStub = file_get_contents($this->getStub());
@@ -151,6 +159,33 @@ class ModelFromTableCommand extends Command
             return Schema::getColumnListing($tableName);
         } else {
             return Schema::connection($this->options['connection'])->getColumnListing($tableName);
+        }
+    }
+
+    public function getDatabaseName()
+    {
+        if (strlen($this->options['connection']) <= 0) {
+            return Schema::getConnection()->getDatabaseName();
+        } else {
+            return Schema::connection($this->options['connection'])->getDriverName();
+        }
+    }
+
+    public function getTablePrefix()
+    {
+        if (strlen($this->options['connection']) <= 0) {
+            return Schema::getConnection()->getTablePrefix();
+        } else {
+            return Schema::connection($this->options['connection'])->getTablePrefix();
+        }
+    }
+
+    public function getDriverName()
+    {
+        if (strlen($this->options['connection']) <= 0) {
+            return Schema::getConnection()->getDriverName();
+        } else {
+            return Schema::connection($this->options['connection'])->getDriverName();
         }
     }
 
@@ -315,14 +350,15 @@ class ModelFromTableCommand extends Command
     /**
      * will return an array of all table names.
      */
-    public function getAllTables($schema = '')
+    public function getAllTables($schema = 'public')
     {
-        $tables = [];
         if ($schema === '') {
-            $sql = "SELECT table_name FROM information_schema.columns WHERE table_schema = '".$schema."'";
-        } else {
-            $sql = "SELECT '".$schema.".'||table_name FROM information_schema.columns WHERE table_schema = '".$schema."'";
+            return [] ;
         }
+        
+        $tables = [];
+        $sql = "SELECT '".$schema.".'||table_name FROM information_schema.columns WHERE table_schema = '".$schema."'";
+
         if (strlen($this->options['connection']) <= 0) {
             $tables = collect(DB::select(DB::raw($sql)))->flatten();
         } else {
