@@ -100,7 +100,7 @@ class ModelFromTableCommand extends Command
             $stub = $modelStub;
 
             // generate the file name for the model based on the table name
-            $filename = str_replace(' ', '', ucwords(str_replace(['.','_'], ' ', $table)));
+            $filename = str_replace(' ', '', ucwords(str_replace(['.', '_'], ' ', $table)));
             $fullPath = "$path/$filename.php";
             $this->doComment("Generating file: $filename.php");
 
@@ -319,9 +319,9 @@ class ModelFromTableCommand extends Command
     {
         $tables = [];
         if ($schema === '') {
-            $sql = "SELECT table_name FROM information_schema.columns WHERE table_schema = '" . $schema . "'";
+            $sql = "SELECT table_name FROM information_schema.columns WHERE table_schema = '".$schema."'";
         } else {
-            $sql = "SELECT '".$schema.".'||table_name FROM information_schema.columns WHERE table_schema = '" . $schema . "'";
+            $sql = "SELECT '".$schema.".'||table_name FROM information_schema.columns WHERE table_schema = '".$schema."'";
         }
         if (strlen($this->options['connection']) <= 0) {
             $tables = collect(DB::select(DB::raw($sql)))->flatten();
