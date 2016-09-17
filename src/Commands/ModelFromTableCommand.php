@@ -76,6 +76,7 @@ class ModelFromTableCommand extends Command
             } else {
                 $this->options['schema'] = $this->getDatabaseName();
             }
+            $this->options['defaultschema'] = $this->options['schema'];
         }
 
         $tables = [];
@@ -129,10 +130,19 @@ class ModelFromTableCommand extends Command
             $this->columns = collect();
 
             foreach ($columns as $col) {
-                $this->columns->push([
-                    'field' => $col->Field,
-                    'type'  => $col->Type,
-                ]);
+                if (isset($col->column_name)) {
+                    $this->columns->push([
+                        'field' => $col->column_name,
+                        'type' => $col->data_type,
+                    ]);
+                } elseif (isset($col->Field)) {
+                    $this->columns->push([
+                        'field' => $col->Field,
+                        'type' => $col->Type,
+                    ]);
+                } else {
+                    $this->doComment('Unknown column format');
+                }
             }
 
             // replace the class name
@@ -349,8 +359,11 @@ class ModelFromTableCommand extends Command
         }
 
         $tables = [];
-        $sql = "SELECT '".$schema.".'||table_name FROM information_schema.columns WHERE table_schema = '".$schema."'";
-
+        if (isset($this->options['defaultschema'])) {
+            $sql = "SELECT distinct table_name FROM information_schema.columns WHERE table_schema = '".$schema."'";
+        } else {
+            $sql = "SELECT distinct CONCAT('".$schema.".',table_name) FROM information_schema.columns WHERE table_schema = '".$schema."'";
+        }
         if (strlen($this->options['connection']) <= 0) {
             $tables = collect(DB::select(DB::raw($sql)))->flatten();
         } else {
