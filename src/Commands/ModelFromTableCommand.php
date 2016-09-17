@@ -133,12 +133,12 @@ class ModelFromTableCommand extends Command
                 if (isset($col->column_name)) {
                     $this->columns->push([
                         'field' => $col->column_name,
-                        'type' => $col->data_type,
+                        'type'  => $col->data_type,
                     ]);
                 } elseif (isset($col->Field)) {
                     $this->columns->push([
                         'field' => $col->Field,
-                        'type' => $col->Type,
+                        'type'  => $col->Type,
                     ]);
                 } else {
                     $this->doComment('Unknown column format');
