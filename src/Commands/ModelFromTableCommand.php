@@ -80,7 +80,7 @@ class ModelFromTableCommand extends Command
 
         // figure out if we need to create a folder or not
         if($this->options['folder'] != app_path()) {
-            if(! is_dir($this->options['folder'])) {
+            if(!is_dir($this->options['folder'])) {
                 mkdir($this->options['folder']);
             }
         }
