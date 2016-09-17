@@ -15,6 +15,7 @@ class ModelFromTableCommand extends Command
      */
     protected $signature = 'generate:modelfromtable
                             {--table= : a single table or a list of tables separated by a comma (,)}
+                            {--schema= : the default schema to use for processing }
                             {--connection= : database connection to use, leave off and it will use the .env connection}
                             {--debug : turns on debugging}
                             {--folder= : by default models are stored in app, but you can change that}
@@ -51,6 +52,7 @@ class ModelFromTableCommand extends Command
         $this->options = [
             'connection' => '',
             'table'      => '',
+            'schema'     => '',
             'folder'     => app_path(),
             'debug'      => false,
             'all'        => false,
@@ -87,7 +89,7 @@ class ModelFromTableCommand extends Command
 
         // figure out if it is all tables
         if ($this->options['all']) {
-            $tables = $this->getAllTables();
+            $tables = $this->getAllTables($this->options['schema']);
         } else {
             $tables = explode(',', $this->options['table']);
         }
@@ -98,7 +100,7 @@ class ModelFromTableCommand extends Command
             $stub = $modelStub;
 
             // generate the file name for the model based on the table name
-            $filename = str_replace(' ', '', ucwords(str_replace('.', ' ', $table)));
+            $filename = str_replace(' ', '', ucwords(str_replace(['.','_'], ' ', $table)));
             $fullPath = "$path/$filename.php";
             $this->doComment("Generating file: $filename.php");
 
@@ -295,6 +297,9 @@ class ModelFromTableCommand extends Command
 
         // single or list of tables
         $this->options['table'] = ($this->option('table')) ? $this->option('table') : '';
+
+        // single or list of default schema
+        $this->options['schema'] = ($this->option('schema')) ? $this->option('schema') : '';
     }
 
     /**
@@ -310,10 +315,14 @@ class ModelFromTableCommand extends Command
     /**
      * will return an array of all table names.
      */
-    public function getAllTables($schema = 'public')
+    public function getAllTables($schema = '')
     {
         $tables = [];
-        $sql = "SELECT table_name FROM information_schema.columns WHERE table_schema = '".$schema."'";
+        if ($schema === '') {
+            $sql = "SELECT table_name FROM information_schema.columns WHERE table_schema = '" . $schema . "'";
+        } else {
+            $sql = "SELECT '".$schema.".'||table_name FROM information_schema.columns WHERE table_schema = '" . $schema . "'";
+        }
         if (strlen($this->options['connection']) <= 0) {
             $tables = collect(DB::select(DB::raw($sql)))->flatten();
         } else {
