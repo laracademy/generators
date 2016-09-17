@@ -69,9 +69,10 @@ class ModelFromTableCommand extends Command
         $this->doComment('Starting Model Generate Command', true);
         $this->getOptions();
 
+        // Empty schema does not work with sql information tables.  set to sensible default
         if ($this->options['schema'] === '') {
             if ($this->getDriverName() === 'pgsql') {
-                $this->options['schema'] = $this->getTablePrefix();
+                $this->options['schema'] = 'public';
             } else {
                 $this->options['schema'] = $this->getDatabaseName();
             }
@@ -192,7 +193,7 @@ class ModelFromTableCommand extends Command
     public function describeTable($tableName)
     {
         $this->doComment('Retrieving column information for : '.$tableName);
-        $tableSchema = 'public';
+        $tableSchema = $this->options['schema'];
         if (strpos($tableName, '.')) {
             $tableSchema = substr($tableName, 0, strpos($tableName, '.'));
             $tableName = substr($tableName, strpos($tableName, '.'));
