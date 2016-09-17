@@ -172,15 +172,6 @@ class ModelFromTableCommand extends Command
         }
     }
 
-    public function getTablePrefix()
-    {
-        if (strlen($this->options['connection']) <= 0) {
-            return Schema::getConnection()->getTablePrefix();
-        } else {
-            return Schema::connection($this->options['connection'])->getTablePrefix();
-        }
-    }
-
     public function getDriverName()
     {
         if (strlen($this->options['connection']) <= 0) {
