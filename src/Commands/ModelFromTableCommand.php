@@ -155,12 +155,12 @@ class ModelFromTableCommand extends Command
     public function describeTable($tableName)
     {
         $this->doComment('Retrieving column information for : '.$tableName);
-        $tableSchema = 'public' ;
-        if (strpos($tableName,'.')) {
-            $tableSchema = substr($tableName,0,strpos($tableName,'.'));
-            $tableName = substr($tableName,strpos($tableName,'.'));
+        $tableSchema = 'public';
+        if (strpos($tableName, '.')) {
+            $tableSchema = substr($tableName, 0, strpos($tableName, '.'));
+            $tableName = substr($tableName, strpos($tableName, '.'));
         }
-        $sql = "SELECT * FROM information_schema.columns WHERE table_schema = '".$tableSchema."' and table_name ='".$tableName."'" ;
+        $sql = "SELECT * FROM information_schema.columns WHERE table_schema = '".$tableSchema."' and table_name ='".$tableName."'";
 
         if (strlen($this->options['connection']) <= 0) {
             return DB::select(DB::raw($sql));
@@ -313,7 +313,7 @@ class ModelFromTableCommand extends Command
     public function getAllTables($schema = 'public')
     {
         $tables = [];
-        $sql = "SELECT table_name FROM information_schema.columns WHERE table_schema = '".$schema."'" ;
+        $sql = "SELECT table_name FROM information_schema.columns WHERE table_schema = '".$schema."'";
         if (strlen($this->options['connection']) <= 0) {
             $tables = collect(DB::select(DB::raw($sql)))->flatten();
         } else {
