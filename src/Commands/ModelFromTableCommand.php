@@ -15,6 +15,7 @@ class ModelFromTableCommand extends Command
      */
     protected $signature = 'generate:modelfromtable
                             {--table= : a single table or a list of tables separated by a comma (,)}
+                            {--schema= : the default schema to use for processing }
                             {--connection= : database connection to use, leave off and it will use the .env connection}
                             {--debug : turns on debugging}
                             {--folder= : by default models are stored in app, but you can change that}
@@ -51,6 +52,7 @@ class ModelFromTableCommand extends Command
         $this->options = [
             'connection' => '',
             'table'      => '',
+            'schema'     => '',
             'folder'     => app_path(),
             'debug'      => false,
             'all'        => false,
@@ -67,6 +69,16 @@ class ModelFromTableCommand extends Command
         $this->doComment('Starting Model Generate Command', true);
         $this->getOptions();
 
+        // Empty schema does not work with sql information tables.  set to sensible default
+        if ($this->options['schema'] === '') {
+            if ($this->getDriverName() === 'pgsql') {
+                $this->options['schema'] = 'public';
+            } else {
+                $this->options['schema'] = $this->getDatabaseName();
+            }
+            $this->options['defaultschema'] = $this->options['schema'];
+        }
+
         $tables = [];
         $path = $this->options['folder'];
         $modelStub = file_get_contents($this->getStub());
@@ -79,15 +91,15 @@ class ModelFromTableCommand extends Command
         }
 
         // figure out if we need to create a folder or not
-        if($this->options['folder'] != app_path()) {
-            if(! is_dir($this->options['folder'])) {
+        if ($this->options['folder'] != app_path()) {
+            if (!is_dir($this->options['folder'])) {
                 mkdir($this->options['folder']);
             }
         }
 
         // figure out if it is all tables
         if ($this->options['all']) {
-            $tables = $this->getAllTables();
+            $tables = $this->getAllTables($this->options['schema']);
         } else {
             $tables = explode(',', $this->options['table']);
         }
@@ -98,19 +110,19 @@ class ModelFromTableCommand extends Command
             $stub = $modelStub;
 
             // generate the file name for the model based on the table name
-            $filename = str_singular(ucfirst($table));
+            $filename = str_replace(' ', '', ucwords(str_replace(['.', '_'], ' ', $table)));
             $fullPath = "$path/$filename.php";
-            $this->doComment("Generating file: $filename.php");
+            $this->doComment("Generating file: $filename.php $table", true);
 
             // gather information on it
+            // getColumnListing doesn't seem to work on pgsql so modified.
             $model = [
                 'table'     => $table,
-                'fillable'  => $this->getSchema($table),
+                'fillable'  => [],
                 'guardable' => [],
                 'hidden'    => [],
                 'casts'     => [],
             ];
-
             // fix these up
             $columns = $this->describeTable($table);
 
@@ -118,14 +130,26 @@ class ModelFromTableCommand extends Command
             $this->columns = collect();
 
             foreach ($columns as $col) {
-                $this->columns->push([
-                    'field' => $col->Field,
-                    'type'  => $col->Type,
-                ]);
+                if (isset($col->column_name)) {
+                    $this->columns->push([
+                        'field' => $col->column_name,
+                        'type'  => $col->data_type,
+                    ]);
+                } elseif (isset($col->Field)) {
+                    $this->columns->push([
+                        'field' => $col->Field,
+                        'type'  => $col->Type,
+                    ]);
+                } else {
+                    $this->doComment('Unknown column format', true);
+                }
+            }
+            foreach ($this->columns as $col) {
+                $model['fillable'][] = $col['field'];
             }
 
             // replace the class name
-            $stub = $this->replaceClassName($stub, $table);
+            $stub = $this->replaceClassName($stub, $filename);
 
             // replace the fillable
             $stub = $this->replaceModuleInformation($stub, $model);
@@ -141,25 +165,51 @@ class ModelFromTableCommand extends Command
         $this->info('Complete');
     }
 
-    public function getSchema($tableName)
+    public function getColumnListing($tableName)
     {
-        $this->doComment('Retrieving table definition for: '.$tableName);
-
+        $this->doComment('Retrieving table definition for: '.$tableName, true);
+        $value = null ;
         if (strlen($this->options['connection']) <= 0) {
-            return Schema::getColumnListing($tableName);
+            $value = Schema::getColumnListing($tableName);
         } else {
-            return Schema::connection($this->options['connection'])->getColumnListing($tableName);
+            $value = Schema::connection($this->options['connection'])->getColumnListing($tableName);
+        }
+        dd($value);
+        return $value;
+    }
+
+    public function getDatabaseName()
+    {
+        if (strlen($this->options['connection']) <= 0) {
+            return Schema::getConnection()->getDatabaseName();
+        } else {
+            return Schema::connection($this->options['connection'])->getDriverName();
+        }
+    }
+
+    public function getDriverName()
+    {
+        if (strlen($this->options['connection']) <= 0) {
+            return Schema::getConnection()->getDriverName();
+        } else {
+            return Schema::connection($this->options['connection'])->getDriverName();
         }
     }
 
     public function describeTable($tableName)
     {
-        $this->doComment('Retrieving column information for : '.$tableName);
-
+        $this->doComment('Retrieving column information for : '.$tableName, true);
+        $tableSchema = $this->options['schema'];
+        if (strpos($tableName, '.')) {
+            $tableSchema = substr($tableName, 0, strpos($tableName, '.'));
+            $tableName = substr($tableName, strpos($tableName, '.')+1);
+        }
+        $sql = "SELECT * FROM information_schema.columns WHERE table_schema = '".$tableSchema."' and table_name ='".$tableName."'";
+        $this->doComment($sql, true);
         if (strlen($this->options['connection']) <= 0) {
-            return DB::select(DB::raw('describe '.$tableName));
+            return DB::select(DB::raw($sql));
         } else {
-            return DB::connection($this->options['connection'])->select(DB::raw('describe '.$tableName));
+            return DB::connection($this->options['connection'])->select(DB::raw($sql));
         }
     }
 
@@ -193,9 +243,14 @@ class ModelFromTableCommand extends Command
         $this->fieldsHidden = '';
         $this->fieldsFillable = '';
         $this->fieldsCast = '';
+        $this->timestamps = false ;
         foreach ($modelInformation['fillable'] as $field) {
+            $this->doComment('Checking field : '.$field, true);
             // fillable and hidden
-            if ($field != 'id' && $field != 'created_at' && $field != 'updated_at') {
+            if ($field == 'created_at' || $field == 'updated_at') {
+                $this->timestamps = true;
+            } elseif ($field == 'id') {
+            } else {
                 $this->fieldsFillable .= (strlen($this->fieldsFillable) > 0 ? ', ' : '')."'$field'";
 
                 $fieldsFiltered = $this->columns->where('field', $field);
@@ -216,10 +271,8 @@ class ModelFromTableCommand extends Command
                             break;
                     }
                 }
-            } else {
-                if ($field != 'id' && $field != 'created_at' && $field != 'updated_at') {
-                    $this->fieldsHidden .= (strlen($this->fieldsHidden) > 0 ? ', ' : '')."'$field'";
-                }
+//            } else {
+//                $this->fieldsHidden .= (strlen($this->fieldsHidden) > 0 ? ', ' : '')."'$field'";
             }
         }
 
@@ -229,6 +282,7 @@ class ModelFromTableCommand extends Command
         $stub = str_replace('{{casts}}', $this->fieldsCast, $stub);
         $stub = str_replace('{{dates}}', $this->fieldsDate, $stub);
         $stub = str_replace('{{modelnamespace}}', $this->options['namespace'], $stub);
+        $stub = str_replace('{{timestamps}}', ($this->timestamps ? '' : 'public $timestamps = false;'), $stub);
 
         return $stub;
     }
@@ -289,6 +343,9 @@ class ModelFromTableCommand extends Command
 
         // single or list of tables
         $this->options['table'] = ($this->option('table')) ? $this->option('table') : '';
+
+        // single or list of default schema
+        $this->options['schema'] = ($this->option('schema')) ? $this->option('schema') : '';
     }
 
     /**
@@ -304,14 +361,22 @@ class ModelFromTableCommand extends Command
     /**
      * will return an array of all table names.
      */
-    public function getAllTables()
+    public function getAllTables($schema = 'public')
     {
-        $tables = [];
+        if ($schema === '') {
+            return [];
+        }
 
-        if (strlen($this->options['connection']) <= 0) {
-            $tables = collect(DB::select(DB::raw('show tables')))->flatten();
+        $tables = [];
+        if (isset($this->options['defaultschema'])) {
+            $sql = "SELECT distinct table_name FROM information_schema.columns WHERE table_schema = '".$schema."'";
         } else {
-            $tables = collect(DB::connection($this->options['connection'])->select(DB::raw('show tables')))->flatten();
+            $sql = "SELECT distinct CONCAT('".$schema.".',table_name) as table_name FROM information_schema.columns WHERE table_schema = '".$schema."'";
+        }
+        if (strlen($this->options['connection']) <= 0) {
+            $tables = collect(DB::select(DB::raw($sql)))->flatten();
+        } else {
+            $tables = collect(DB::connection($this->options['connection'])->select(DB::raw($sql)))->flatten();
         }
 
         $tables = $tables->map(function ($value, $key) {
