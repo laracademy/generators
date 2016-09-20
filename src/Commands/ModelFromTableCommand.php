@@ -168,7 +168,7 @@ class ModelFromTableCommand extends Command
     public function getColumnListing($tableName)
     {
         $this->doComment('Retrieving table definition for: '.$tableName, true);
-        $value = null ;
+        $value = null;
         if (strlen($this->options['connection']) <= 0) {
             $value = Schema::getColumnListing($tableName);
         } else {
@@ -202,7 +202,7 @@ class ModelFromTableCommand extends Command
         $tableSchema = $this->options['schema'];
         if (strpos($tableName, '.')) {
             $tableSchema = substr($tableName, 0, strpos($tableName, '.'));
-            $tableName = substr($tableName, strpos($tableName, '.')+1);
+            $tableName = substr($tableName, strpos($tableName, '.') + 1);
         }
         $sql = "SELECT * FROM information_schema.columns WHERE table_schema = '".$tableSchema."' and table_name ='".$tableName."'";
         $this->doComment($sql, true);
@@ -243,7 +243,7 @@ class ModelFromTableCommand extends Command
         $this->fieldsHidden = '';
         $this->fieldsFillable = '';
         $this->fieldsCast = '';
-        $this->timestamps = false ;
+        $this->timestamps = false;
         foreach ($modelInformation['fillable'] as $field) {
             $this->doComment('Checking field : '.$field, true);
             // fillable and hidden
