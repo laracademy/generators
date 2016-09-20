@@ -174,7 +174,7 @@ class ModelFromTableCommand extends Command
         } else {
             $value = Schema::connection($this->options['connection'])->getColumnListing($tableName);
         }
-        dd($value);
+
         return $value;
     }
 
