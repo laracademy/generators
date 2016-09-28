@@ -240,7 +240,7 @@ class ModelFromTableCommand extends Command
      *
      * @var string
      */
-    protected $connection = \''.$database.'\'';
+    protected $connection = \''.$database.'\';';
 
         if (strlen($database) <= 0) {
             $stub = str_replace('{{connection}}', '', $stub);
