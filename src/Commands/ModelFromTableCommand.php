@@ -195,7 +195,7 @@ class ModelFromTableCommand extends Command
         $this->fieldsCast = '';
         foreach ($modelInformation['fillable'] as $field) {
             // fillable and hidden
-            if ($field != 'id' && $field != 'created_at' && $field != 'updated_at') {
+            if ($field != 'id') {
                 $this->fieldsFillable .= (strlen($this->fieldsFillable) > 0 ? ', ' : '')."'$field'";
 
                 $fieldsFiltered = $this->columns->where('field', $field);
