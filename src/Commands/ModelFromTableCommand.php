@@ -124,6 +124,9 @@ class ModelFromTableCommand extends Command
                 ]);
             }
 
+            // reset fields
+            $this->resetFields();
+
             // replace the class name
             $stub = $this->replaceClassName($stub, $table);
 
@@ -321,5 +324,16 @@ class ModelFromTableCommand extends Command
         });
 
         return $tables;
+    }
+
+    /**
+     * reset all variables to be filled again when using multiple
+     */
+    public function resetFields()
+    {
+        $this->fieldsFillable = '';
+        $this->fieldsHidden   = '';
+        $this->fieldsCast     = '';
+        $this->fieldsDate     = '';
     }
 }
