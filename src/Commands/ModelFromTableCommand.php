@@ -98,7 +98,7 @@ class ModelFromTableCommand extends Command
             $stub = $modelStub;
 
             // generate the file name for the model based on the table name
-            $filename = str_singular(ucfirst($table));
+            $filename = str_replace(' ', '', ucwords(str_replace('.', ' ', $table)));
             $fullPath = "$path/$filename.php";
             $this->doComment("Generating file: $filename.php");
 
@@ -128,7 +128,7 @@ class ModelFromTableCommand extends Command
             $this->resetFields();
 
             // replace the class name
-            $stub = $this->replaceClassName($stub, $table);
+            $stub = $this->replaceClassName($stub, $filename);
 
             // replace the fillable
             $stub = $this->replaceModuleInformation($stub, $model);
@@ -158,11 +158,17 @@ class ModelFromTableCommand extends Command
     public function describeTable($tableName)
     {
         $this->doComment('Retrieving column information for : '.$tableName);
+        $tableSchema = 'public';
+        if (strpos($tableName, '.')) {
+            $tableSchema = substr($tableName, 0, strpos($tableName, '.'));
+            $tableName = substr($tableName, strpos($tableName, '.'));
+        }
+        $sql = "SELECT * FROM information_schema.columns WHERE table_schema = '".$tableSchema."' and table_name ='".$tableName."'";
 
         if (strlen($this->options['connection']) <= 0) {
-            return DB::select(DB::raw('describe '.$tableName));
+            return DB::select(DB::raw($sql));
         } else {
-            return DB::connection($this->options['connection'])->select(DB::raw('describe '.$tableName));
+            return DB::connection($this->options['connection'])->select(DB::raw($sql));
         }
     }
 
@@ -307,14 +313,14 @@ class ModelFromTableCommand extends Command
     /**
      * will return an array of all table names.
      */
-    public function getAllTables()
+    public function getAllTables($schema = 'public')
     {
         $tables = [];
-
+        $sql = "SELECT table_name FROM information_schema.columns WHERE table_schema = '".$schema."'";
         if (strlen($this->options['connection']) <= 0) {
-            $tables = collect(DB::select(DB::raw('show tables')))->flatten();
+            $tables = collect(DB::select(DB::raw($sql)))->flatten();
         } else {
-            $tables = collect(DB::connection($this->options['connection'])->select(DB::raw('show tables')))->flatten();
+            $tables = collect(DB::connection($this->options['connection'])->select(DB::raw($sql)))->flatten();
         }
 
         $tables = $tables->map(function ($value, $key) {
