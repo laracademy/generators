@@ -98,7 +98,7 @@ class ModelFromTableCommand extends Command
             $stub = $modelStub;
 
             // generate the file name for the model based on the table name
-            $filename = str_singular(ucfirst($table));
+            $filename = studly_case($table);
             $fullPath = "$path/$filename.php";
             $this->doComment("Generating file: $filename.php");
 
@@ -176,7 +176,7 @@ class ModelFromTableCommand extends Command
      */
     public function replaceClassName($stub, $tableName)
     {
-        return str_replace('{{class}}', str_singular(ucfirst($tableName)), $stub);
+        return str_replace('{{class}}', studly_case($tableName), $stub);
     }
 
     /**
