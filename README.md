@@ -10,7 +10,7 @@
 ## Requirements
 
 1. PHP 5.6+
-2. Laravel 5.2+
+2. Laravel 5.2+ / Lumen 5.2+
 
 ## Usage
 
@@ -25,6 +25,12 @@ The easiest method is to add the following into your `config/app.php` file
 
 ```php
 Laracademy\Generators\GeneratorsServiceProvider::class
+```
+
+In Lumen you can add the following into your `bootstrap/app.php`
+
+```php
+$app->register(Laracademy\Generators\GeneratorsServiceProvider::class);
 ```
 
 Depending on your set up you may want to only use these providers for development, so you don't update your `production` servers. Instead, add the provider in `app/Providers/AppServiceProvider.php' like so
