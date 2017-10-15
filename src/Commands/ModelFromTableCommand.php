@@ -51,7 +51,7 @@ class ModelFromTableCommand extends Command
         $this->options = [
             'connection' => '',
             'table'      => '',
-            'folder'     => app_path(),
+            'folder'     => app()->path(),
             'debug'      => false,
             'all'        => false,
         ];
@@ -79,7 +79,7 @@ class ModelFromTableCommand extends Command
         }
 
         // figure out if we need to create a folder or not
-        if($this->options['folder'] != app_path()) {
+        if($this->options['folder'] != app()->path()) {
             if(! is_dir($this->options['folder'])) {
                 mkdir($this->options['folder']);
             }
@@ -276,7 +276,7 @@ class ModelFromTableCommand extends Command
         $this->options['connection'] = ($this->option('connection')) ? $this->option('connection') : '';
 
         // folder
-        $this->options['folder'] = ($this->option('folder')) ? base_path($this->option('folder')) : app_path();
+        $this->options['folder'] = ($this->option('folder')) ? base_path($this->option('folder')) : app()->path();
         // trim trailing slashes
         $this->options['folder'] = rtrim($this->options['folder'], '/');
 
