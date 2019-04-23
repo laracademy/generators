@@ -4,7 +4,8 @@ namespace {{modelnamespace}};
 
 use Illuminate\Database\Eloquent\Model;
 
-class {{class}} extends Model  {
+class {{class}} extends Model  
+{
 
     {{connection}}
 
