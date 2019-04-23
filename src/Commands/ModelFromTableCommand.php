@@ -19,6 +19,7 @@ class ModelFromTableCommand extends Command
                             {--debug : turns on debugging}
                             {--folder= : by default models are stored in app, but you can change that}
                             {--namespace= : by default the namespace that will be applied to all models is App}
+                            {--singular : class name and class file name singular or plural}
                             {--all : run for all tables}';
 
     /**
@@ -54,6 +55,7 @@ class ModelFromTableCommand extends Command
             'folder'     => app()->path(),
             'debug'      => false,
             'all'        => false,
+            'singular'   => '',
         ];
     }
 
@@ -99,6 +101,11 @@ class ModelFromTableCommand extends Command
 
             // generate the file name for the model based on the table name
             $filename = studly_case($table);
+
+            if ($this->options['singular']){
+                $filename = str_singular($filename);
+            }
+
             $fullPath = "$path/$filename.php";
             $this->doComment("Generating file: $filename.php");
 
@@ -176,7 +183,7 @@ class ModelFromTableCommand extends Command
      */
     public function replaceClassName($stub, $tableName)
     {
-        return str_replace('{{class}}', studly_case($tableName), $stub);
+        return str_replace('{{class}}', $this->options['singular'] ? str_singular(studly_case($tableName)): studly_case($tableName), $stub);
     }
 
     /**
@@ -292,6 +299,9 @@ class ModelFromTableCommand extends Command
 
         // single or list of tables
         $this->options['table'] = ($this->option('table')) ? $this->option('table') : '';
+
+        // class name and class file name singular/plural
+        $this->options['singular'] = ($this->option('singular')) ? $this->option('singular') : '';
     }
 
     /**
