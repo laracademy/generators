@@ -16,4 +16,11 @@
           "Laracademy\\Generators\\": "src/"
         }
     }
+     "extra": {
+        "laravel": {
+            "providers": [
+                "Laracademy\\Generators\\GeneratorsServiceProvider"
+            ]
+        }
+    },
 }
