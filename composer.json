@@ -15,8 +15,8 @@
         "psr-4": {
           "Laracademy\\Generators\\": "src/"
         }
-    }
-     "extra": {
+    },
+    "extra": {
         "laravel": {
             "providers": [
                 "Laracademy\\Generators\\GeneratorsServiceProvider"
