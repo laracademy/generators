@@ -19,34 +19,10 @@
 ### Step 1: Install through Composer
 
 ```
-composer require "laracademy/generators"
+composer require "laracademy/generators" --dev
 ```
 
-### Step 2: Add the Service Provider
-The easiest method is to add the following into your `config/app.php` file
-
-```php
-Laracademy\Generators\GeneratorsServiceProvider::class
-```
-
-In Lumen you can add the following into your `bootstrap/app.php`
-
-```php
-$app->register(Laracademy\Generators\GeneratorsServiceProvider::class);
-```
-
-Depending on your set up you may want to only use these providers for development, so you don't update your `production` servers. Instead, add the provider in `app/Providers/AppServiceProvider.php' like so
-
-```php
-public function register()
-{
-    if($this->app->environment() == 'local') {
-        $this->app->register('\Laracademy\Generators\GeneratorsServiceProvider');
-    }
-}
-```
-
-### Step 3: Artisan Command
+### Step 2: Artisan Command
 Now that we have added the generator to our project the last thing to do is run Laravel's Arisan command
 
 ```
