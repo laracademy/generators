@@ -168,9 +168,9 @@ class ModelFromTableCommand extends Command
         $this->doComment('Retrieving column information for : '.$tableName);
 
         if (strlen($this->options['connection']) <= 0) {
-            return DB::select(DB::raw('describe '.$tableName));
+            return DB::select(DB::raw("describe `{$tableName}`"));
         } else {
-            return DB::connection($this->options['connection'])->select(DB::raw('describe '.$tableName));
+            return DB::connection($this->options['connection'])->select(DB::raw("describe `{$tableName}`"));
         }
     }
 
