@@ -284,16 +284,22 @@ class ModelFromTableCommand extends Command
         $this->options['connection'] = ($this->option('connection')) ? $this->option('connection') : '';
 
         // folder
+        // first check for namespace
+        if(! $this->option('namespace')) {
+            // set the namespace to the folder
+            $this->options['namespace'] = Str::studly($this->option('folder'));
+        } else {
+            // default namespace
+            $this->options['namespace'] = ($this->option('namespace')) ? str_replace('app', 'App', $this->option('namespace')) : 'App';
+            // remove trailing slash if exists
+            $this->options['namespace'] = rtrim($this->options['namespace'], '/');
+            // fix slashes
+            $this->options['namespace'] = str_replace('/', '\\', $this->options['namespace']);
+        }
+        // finish setting up folder
         $this->options['folder'] = ($this->option('folder')) ? base_path($this->option('folder')) : app()->path();
         // trim trailing slashes
         $this->options['folder'] = rtrim($this->options['folder'], '/');
-
-        // namespace
-        $this->options['namespace'] = ($this->option('namespace')) ? str_replace('app', 'App', $this->option('namespace')) : 'App';
-        // remove trailing slash if exists
-        $this->options['namespace'] = rtrim($this->options['namespace'], '/');
-        // fix slashes
-        $this->options['namespace'] = str_replace('/', '\\', $this->options['namespace']);
 
         // all tables
         $this->options['all'] = ($this->option('all')) ? true : false;
