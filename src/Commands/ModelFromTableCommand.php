@@ -3,8 +3,9 @@
 namespace Laracademy\Generators\Commands;
 
 use DB;
-use Illuminate\Console\Command;
+use Str;
 use Schema;
+use Illuminate\Console\Command;
 
 class ModelFromTableCommand extends Command
 {
@@ -100,7 +101,7 @@ class ModelFromTableCommand extends Command
             $stub = $modelStub;
 
             // generate the file name for the model based on the table name
-            $filename = studly_case($table);
+            $filename = Str::studly($table);
 
             if ($this->options['singular']){
                 $filename = str_singular($filename);
@@ -183,7 +184,7 @@ class ModelFromTableCommand extends Command
      */
     public function replaceClassName($stub, $tableName)
     {
-        return str_replace('{{class}}', $this->options['singular'] ? str_singular(studly_case($tableName)): studly_case($tableName), $stub);
+        return str_replace('{{class}}', $this->options['singular'] ? str_singular(Str::studly($tableName)): Str::studly($tableName), $stub);
     }
 
     /**
