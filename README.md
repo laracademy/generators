@@ -10,7 +10,9 @@
 ## Requirements
 
 1. PHP 5.6+
-2. Laravel 5.2+ / Lumen 5.2+
+2. Laravel 6.*
+
+** For Laravel 5.* please use the version 1.5
 
 ## Usage
 
