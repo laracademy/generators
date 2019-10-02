@@ -3,8 +3,9 @@
 namespace Laracademy\Generators\Commands;
 
 use DB;
-use Illuminate\Console\Command;
+use Str;
 use Schema;
+use Illuminate\Console\Command;
 
 class ModelFromTableCommand extends Command
 {
@@ -100,7 +101,7 @@ class ModelFromTableCommand extends Command
             $stub = $modelStub;
 
             // generate the file name for the model based on the table name
-            $filename = studly_case($table);
+            $filename = Str::studly($table);
 
             if ($this->options['singular']){
                 $filename = str_singular($filename);
@@ -167,9 +168,9 @@ class ModelFromTableCommand extends Command
         $this->doComment('Retrieving column information for : '.$tableName);
 
         if (strlen($this->options['connection']) <= 0) {
-            return DB::select(DB::raw('describe '.$tableName));
+            return DB::select(DB::raw("describe `{$tableName}`"));
         } else {
-            return DB::connection($this->options['connection'])->select(DB::raw('describe '.$tableName));
+            return DB::connection($this->options['connection'])->select(DB::raw("describe `{$tableName}`"));
         }
     }
 
@@ -183,7 +184,7 @@ class ModelFromTableCommand extends Command
      */
     public function replaceClassName($stub, $tableName)
     {
-        return str_replace('{{class}}', $this->options['singular'] ? str_singular(studly_case($tableName)): studly_case($tableName), $stub);
+        return str_replace('{{class}}', $this->options['singular'] ? str_singular(Str::studly($tableName)): Str::studly($tableName), $stub);
     }
 
     /**
@@ -283,16 +284,22 @@ class ModelFromTableCommand extends Command
         $this->options['connection'] = ($this->option('connection')) ? $this->option('connection') : '';
 
         // folder
+        // first check for namespace
+        if(! $this->option('namespace')) {
+            // set the namespace to the folder
+            $this->options['namespace'] = Str::studly($this->option('folder'));
+        } else {
+            // default namespace
+            $this->options['namespace'] = ($this->option('namespace')) ? str_replace('app', 'App', $this->option('namespace')) : 'App';
+            // remove trailing slash if exists
+            $this->options['namespace'] = rtrim($this->options['namespace'], '/');
+            // fix slashes
+            $this->options['namespace'] = str_replace('/', '\\', $this->options['namespace']);
+        }
+        // finish setting up folder
         $this->options['folder'] = ($this->option('folder')) ? base_path($this->option('folder')) : app()->path();
         // trim trailing slashes
         $this->options['folder'] = rtrim($this->options['folder'], '/');
-
-        // namespace
-        $this->options['namespace'] = ($this->option('namespace')) ? str_replace('app', 'App', $this->option('namespace')) : 'App';
-        // remove trailing slash if exists
-        $this->options['namespace'] = rtrim($this->options['namespace'], '/');
-        // fix slashes
-        $this->options['namespace'] = str_replace('/', '\\', $this->options['namespace']);
 
         // all tables
         $this->options['all'] = ($this->option('all')) ? true : false;
