@@ -11,6 +11,7 @@
 
 1. PHP 5.6+
 2. Laravel 6.*
+3. MySQL *
 
 ** For Laravel 5.* please use the version 1.5
 
