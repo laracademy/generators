@@ -104,7 +104,7 @@ class ModelFromTableCommand extends Command
             $filename = Str::studly($table);
 
             if ($this->options['singular']){
-                $filename = str_singular($filename);
+                $filename = Str::singular($filename);
             }
 
             $fullPath = "$path/$filename.php";
@@ -184,7 +184,7 @@ class ModelFromTableCommand extends Command
      */
     public function replaceClassName($stub, $tableName)
     {
-        return str_replace('{{class}}', $this->options['singular'] ? str_singular(Str::studly($tableName)): Str::studly($tableName), $stub);
+        return str_replace('{{class}}', $this->options['singular'] ? Str::singular(Str::studly($tableName)): Str::studly($tableName), $stub);
     }
 
     /**
