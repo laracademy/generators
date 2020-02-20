@@ -3,7 +3,7 @@
 namespace Laracademy\Generators\Commands;
 
 use DB;
-use Str;
+use Illuminate\Support\Str;
 use Schema;
 use Illuminate\Console\Command;
 
