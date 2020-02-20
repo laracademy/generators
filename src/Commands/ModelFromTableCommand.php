@@ -333,9 +333,9 @@ class ModelFromTableCommand extends Command
         $tables = [];
 
         if (strlen($this->options['connection']) <= 0) {
-            $tables = collect(DB::select(DB::raw('show tables')))->flatten();
+            $tables = collect(DB::select(DB::raw("show full tables where Table_Type = 'BASE TABLE'")))->flatten();
         } else {
-            $tables = collect(DB::connection($this->options['connection'])->select(DB::raw('show tables')))->flatten();
+            $tables = collect(DB::connection($this->options['connection'])->select(DB::raw("show full tables where Table_Type = 'BASE TABLE'")))->flatten();
         }
 
         $tables = $tables->map(function ($value, $key) {
