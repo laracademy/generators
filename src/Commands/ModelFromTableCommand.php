@@ -3,8 +3,8 @@
 namespace Laracademy\Generators\Commands;
 
 use DB;
-use Str;
 use Schema;
+use Illuminate\Support\Str;
 use Illuminate\Console\Command;
 
 class ModelFromTableCommand extends Command
