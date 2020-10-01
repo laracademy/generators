@@ -20,11 +20,14 @@ class GeneratorsServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        //
+        $this->publishes([
+            __DIR__.'/../config/modelfromtable.php' => config_path('modelfromtable.php'),
+        ], 'modelfromtable');
     }
 
     public function register()
     {
+        $this->mergeConfigFrom(__DIR__.'/../config/modelfromtable.php', 'modelfromtable');
         $this->registerModelGenerator();
     }
 
