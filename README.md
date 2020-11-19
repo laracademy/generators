@@ -65,6 +65,7 @@ This command comes with a bunch of different options, please see below for each 
   * you can change the namespace by adding this option
 * --debug=
   * this shows some more information while running
+  * _note has explicitly set to true in command line_
 * --singular
   * this will create a singular titled model
 * --overwrite=
