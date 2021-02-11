@@ -49,10 +49,11 @@ This command comes with a bunch of different options, please see below for each 
 * --table=
   * This parameter if filled in will generate a model for the given table.
    * You can also pass in a list of tables using comma separated values.
-* --all
+* --all=
   * If this flag is present, then the table command will be ignored.
    * This will generate a model for **all** tables found in your database.
    * _please note that this command will only ignore the `migrations` table and no model will be generate for it_
+   * _note has explicitly set to true in command line_
 * --connection=
   * by default if this option is omitted then the generate will use the default connection found in `config/database.php`
   * To specify a connection ensure that it exists in your `config/database.php` first.
@@ -62,10 +63,18 @@ This command comes with a bunch of different options, please see below for each 
 * --namespace=
   * by default all models will have the namespace of App
   * you can change the namespace by adding this option
-* --debug
+* --debug=
   * this shows some more information while running
+  * _note has explicitly set to true in command line_
 * --singular
   * this will create a singular titled model
+* --overwrite=
+  * overwrite model(s) if exists
+  * _note has explicitly set to true in command line_
+* --timestamps= 
+  * whether to timestamp or not
+  * _note has explicitly set to true in command line_
+  
 
 ## Examples
 
@@ -84,13 +93,13 @@ php artisan generate:modelfromtable --table=users,posts
 ### Generating all tables
 
 ```
-php artisan generate:modelfromtable --all
+php artisan generate:modelfromtable --all=true
 ```
 
 ### Changing to another connection found in `database.php` and generating models for all tables
 
 ```
-php artisan generate:modelfromtable --connection=spark --all
+php artisan generate:modelfromtable --connection=spark --all=true
 ```
 
 ### Changing the folder where to /app/Models
