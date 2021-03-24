@@ -361,7 +361,7 @@ class ModelFromTableCommand extends Command
         // if there is no folder specified and no namespace
         if(! $this->options['folder'] && ! $this->options['namespace']) {
             // assume default APP
-            $this->options['namespace'] = 'App';
+            $this->options['namespace'] = 'App\Models';
         } else {
             // if we have a namespace, use it first
             if($this->options['namespace']) {
