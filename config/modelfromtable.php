@@ -24,6 +24,8 @@ return [
 
     'folder' => '',
 
+    'filename' => '',
+
     'debug' => false,
 
     'all' => false,
@@ -36,5 +38,7 @@ return [
 
     'whitelist' => [],
 
-    'delimiter' => ', '
+    'delimiter' => ', ',
+
+    'timestamps' => false
 ];
