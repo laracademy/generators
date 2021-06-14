@@ -312,7 +312,7 @@ class ModelFromTableCommand extends Command
         }
 
         // generate doclines (doing this after the loop above so we can get the largest cast type and pad accordingly)
-        $generateDocLine = fn(string $type, string $field, int $padding) => str_pad("\n * @property {$type}", $padding, ' ') . "$$field";
+        $generateDocLine = (function (string $type, string $field, int $padding) { return str_pad("\n * @property {$type}", $padding, ' ') . "$$field";});
         $padding = array_reduce(array_keys($types), fn($carry, $x) => max($carry, strlen($x)), 0) + 15;
 
         foreach ($types as $type => $fields) {
