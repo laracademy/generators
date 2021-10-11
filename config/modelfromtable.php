@@ -28,8 +28,6 @@ return [
 
     'debug' => false,
 
-    'all' => false,
-
     'singular' => false,
 
     'overwrite' => false,
