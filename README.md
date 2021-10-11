@@ -9,7 +9,7 @@
 
 ## Requirements
 
-1. PHP 5.6+
+1. PHP 7.4+
 2. Laravel 6.*
 3. MySQL *
 
