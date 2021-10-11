@@ -144,9 +144,7 @@ class ModelFromTableCommand extends Command
         
         $types = [];
 
-        $columns = $table['columns'];
-
-        foreach ($columns as $column) {
+        foreach ($table['columns'] as $column) {
             // fillable
             if ($column['field'] != $primaryKey) {
                 $this->interpolate($stubFillable, "'{$column['field']}'");
