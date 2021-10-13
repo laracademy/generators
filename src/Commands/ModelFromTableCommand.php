@@ -15,6 +15,7 @@ class ModelFromTableCommand extends Command
      */
     protected $signature = 'generate:modelfromtable
                             {--table= : a single table or a list of tables separated by a comma (,)}
+                            {--schema= : what schema to use}
                             {--connection= : database connection to use, leave off and it will use the .env connection}
                             {--debug= : turns on debugging}
                             {--folder= : by default models are stored in app, but you can change that}
@@ -34,8 +35,12 @@ class ModelFromTableCommand extends Command
 
     private $db;
     private $options;
+    private $startTime;
     private $delimiter;
     private $stubConnection;
+
+    private $modelPath;
+    private $modelStub;
 
     /**
      * Create a new command instance.
@@ -44,13 +49,18 @@ class ModelFromTableCommand extends Command
      */
     public function __construct()
     {
+        $this->startTime = microtime(true);
+
         parent::__construct();
+
+        $this->modelPath = (app()->version() > '8')? app()->path('Models') : app()->path();
 
         $this->options = [
             'connection' => '',
             'namespace'  => '',
             'table'      => '',
-            'folder'     => $this->getModelPath(),
+            'schema'     => '',
+            'folder'     => $this->modelPath,
             'filename'   => '',
             'debug'      => false,
             'singular'   => false,
@@ -58,6 +68,8 @@ class ModelFromTableCommand extends Command
         ];
 
         $this->delimiter = config('modelfromtable.delimiter', ', ');
+
+        $this->modelStub = file_get_contents($this->getStub());
     }
 
     /**
@@ -81,7 +93,7 @@ class ModelFromTableCommand extends Command
 
         // figure out if we need to create a folder or not
         // NOTE: lambas will need to handle this themselves
-        if (!is_callable($path) && $path != $this->getModelPath()) {
+        if (!is_callable($path) && $path != $this->modelPath) {
             if (!is_dir($path)) {
                 mkdir($path);
             }
@@ -91,10 +103,6 @@ class ModelFromTableCommand extends Command
 
         // cycle through each table
         foreach ($tables as $table) {
-            // grab a fresh copy of our stub
-            $stub = $modelStub;
-
-            // if (!$overwrite and file_exists($fullPath)) {
             if (!$overwrite and file_exists($table['file']['path'])) {
                 $this->doComment("Skipping file: {$table['file']['name']}");
                 continue;
@@ -102,14 +110,14 @@ class ModelFromTableCommand extends Command
 
             $this->doComment("Generating file: {$table['file']['name']}");
 
-            $stub = $this->hydrateStub($stub, $table);
+            $stub = $this->hydrateStub($table);
 
             // writing stub out
             $this->doComment("Writing model: {$table['file']['path']}", true);
             file_put_contents($table['file']['path'], $stub);
         }
 
-        $this->info('Complete');
+        $this->info('Completed in ' . (number_format(microtime(true) - $this->startTime, 2)) . ' seconds');
     }
 
     public function describeTable($tableName)
@@ -127,17 +135,12 @@ class ModelFromTableCommand extends Command
      *
      * @return string stub content
      */
-    public function hydrateStub($stub, $table)
+    public function hydrateStub($table)
     {
         // replace table
-        $stub = str_replace('{{table}}', $table['name'], $stub);
+        $stub = $this->modelStub;
 
-        $primaryKey = config('modelfromtable.primaryKey', 'id');
-
-        // allow config to apply a lamba to obtain non-ordinary primary key name
-        if (is_callable($primaryKey)) {
-            $primaryKey = $primaryKey($table['name']);
-        }
+        $primaryKey = $table['primary'];
 
         // reset stub fields
         $stubDocBlock = $stubFillable = $stubHidden = $stubCast = $stubDate = '';
@@ -269,6 +272,7 @@ class ModelFromTableCommand extends Command
         $this->options['folder'] = $this->getOption('folder', '');
         $this->options['filename'] = $this->getOption('filename', '');
         $this->options['namespace'] = $this->getOption('namespace', '');
+        $this->options['schema'] = $this->getOption('schema', '');
 
         // if there is no folder specified and no namespace, set default namespaace
         if (!$this->options['folder'] && !$this->options['namespace']) {
@@ -285,7 +289,7 @@ class ModelFromTableCommand extends Command
 
         // finish setting up folder (if not a function)
         if (!is_callable($this->options['folder'])) {
-            $this->options['folder'] = ($this->options['folder']) ? base_path($this->options['folder']) : $this->getModelPath();
+            $this->options['folder'] = ($this->options['folder']) ? base_path($this->options['folder']) : $this->modelPath;
             // trim trailing slashes
             $this->options['folder'] = rtrim($this->options['folder'], '/');
         }
@@ -313,11 +317,6 @@ class ModelFromTableCommand extends Command
         return $return;
     }
 
-    private function getModelPath()
-    {
-        return (app()->version() > '8')? app()->path('Models') : app()->path();
-    }
-
     /**
      * will add a comment to the screen if debug is on, or is over-ridden.
      */
@@ -333,66 +332,55 @@ class ModelFromTableCommand extends Command
      */
     public function getTables()
     {
-        $tables = collect();
+        $this->doComment('Retrieving database tables');
+
+        $whitelist = config('modelfromtable.whitelist', []);
+        $blacklist = config('modelfromtable.blacklist', ['migrations']);
 
         if ($this->options['table']) {
-            $tableNames = explode(',', $this->options['table']);
+            $whitelist = $whitelist + explode(',', $this->options['table']);
+        }
+
+        // mysql REGEXP behaves differently than fnmatch, so slightly modify operators
+        $whitelistString = Str::replace('*', '.*', implode('|', $whitelist));
+        $whitelistString = "($whitelistString)$";
+        $blacklistString = Str::replace('*', '.*', implode('|', $blacklist));
+        $blacklistString = "($blacklistString)$";
+
+        // get all tables by default
+        $query = $this->db
+            ->query()
+            ->select(['TABLE_NAME as name', 'COLUMN_NAME as field', 'COLUMN_TYPE as type'])
+            ->selectRaw("IF(COLUMN_KEY = 'PRI', 1, 0) as isPrimary")
+            ->from('INFORMATION_SCHEMA.COLUMNS')
+            ->where('TABLE_NAME', 'REGEXP', $whitelistString)
+            ->where('TABLE_NAME', 'NOT REGEXP', $blacklistString)
+            ->orderBy('TABLE_NAME')
+            ->orderBy('isPrimary', 'DESC');
+
+        if ($this->options['schema']) {
+            $query->where('TABLE_SCHEMA', $this->options['schema']);
         } else {
-            // get all tables by default
-            $whitelist = config('modelfromtable.whitelist', []);
-            $blacklist = config('modelfromtable.blacklist', []);
-
-            $tableNames = collect($this->db->select($this->db->raw("show full tables where Table_Type = 'BASE TABLE'")))->flatten();
-
-            $tableNames = $tableNames->map(function ($value) {
-                return collect($value)->flatten()[0];
-            })->reject(function ($value) use ($blacklist) {
-                foreach($blacklist as $reject) {
-                    if (fnmatch($reject, $value)) {
-                        return true;
-                    }
-                }
-            })->filter(function ($value) use ($whitelist) {
-                if (!$whitelist) {
-                    return true;
-                }
-                foreach($whitelist as $accept) {
-                    if (fnmatch($accept, $value)) {
-                        return true;
-                    }
-                }
-            });
+            $query->whereNotIn('TABLE_SCHEMA', ['information_schema', 'mysql', 'sys']);
         }
 
-        // get all columns 
-        foreach($tableNames as $tableName) {
-            $tables->push([
-                'name' => $tableName,
-                'columns' => $this->getColumns($tableName),
-                'file' => $this->getPath($tableName)
+        $columns = $query->get();
+
+        return $columns
+            ->groupBy('name')
+            ->mapWithKeys(fn($x, $tableName) => [
+                $tableName => [
+                    'name' => $tableName,
+                    'columns' => $x->map(fn($y) => [
+                        'field' => $y->field,
+                        'type' => $y->type
+                    ]),
+                    'primary' => ($x[0]->isPrimary) ? $x[0]->field : null,
+                    'file' => $this->getPath($tableName)
+                ]
             ]);
-        }
-
-        return $tables;
     }
-
-    private function getColumns($table)
-    {
-        // fix these up
-        $columns = $this->describeTable($table);
-
-        // use a collection
-        $return = collect();
-
-        foreach ($columns as $col) {
-            $return->push([
-                'field' => $col->Field,
-                'type'  => $col->Type,
-            ]);
-        }
-
-        return $return;
-    }
+       
 
     private function getPath($tableName)
     {

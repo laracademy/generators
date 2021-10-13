@@ -20,8 +20,6 @@ return [
 
     'table' => '',
 
-    'primaryKey' => 'id',
-
     'folder' => '',
 
     'filename' => '',
