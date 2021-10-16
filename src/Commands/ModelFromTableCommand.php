@@ -223,6 +223,7 @@ class ModelFromTableCommand extends Command
         $stub = str_replace('{{connection}}', $this->stubConnection, $stub);
         $stub = str_replace('{{class}}', $table['file']['class'], $stub);
         $stub = str_replace('{{docblock}}', $stubDocBlock, $stub);
+        $stub = str_replace('{{table}}', $table['name'], $stub);
         $stub = str_replace('{{primaryKey}}', $primaryKey, $stub);
         $stub = str_replace('{{fillable}}', $stubFillable, $stub);
         $stub = str_replace('{{hidden}}', $stubHidden, $stub);
