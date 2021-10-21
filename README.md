@@ -99,19 +99,6 @@ php artisan generate:modelfromtable --table=user --folder=app\Models
 ## Configuration file for saving defaults, dynamic lambdas
 A [config file](https://github.com/laracademy/generators/blob/master/config/modelfromtable.php) should be in your project's config folder (if not, you can easily create it). Through this, you can set defaults you commonly use to cut down on the input your command line call requires. Some fields, like `namespace`, accept a static value or, more powerfully, a lambda to generate dynamic values. Additional fields not available to the CLI are available in the config. See below.
 
-### Primary Key, using lamba (config only)
-Some apps do not use the Laravel default of `id`, so say your table name prefixes the primary key...
-```php
-'primaryKey' => fn(string $tableName) => "{$tableName}_id",
-```
-Some legacy databases do not conform to a standard, so a more powerful example could be querying the primary key column directly...
-```php
-'primaryKey' => (function (string $tableName) {
-    $primaryKey = collect(DB::select(DB::raw("SHOW KEYS FROM {$tableName} WHERE Key_name = 'PRIMARY'")))->first();
-    return ($primaryKey) ? $primaryKey->Column_name : false;
-}),
-```
-
 ### Whitelist/Blacklist (config only)
 Particularly large databases often have a number of tables that aren't meant to have models. These can easily be filtered through either the whitelist or blacklist (or both!). Laravel's "migrations" table is already included in the blacklist. One nice feature is that you can wildcard table names if that makes sense for your situation...
 ```php
