@@ -217,7 +217,7 @@ class ModelFromTableCommand extends Command
             }
         }
 
-        $timestamps = ($this->getOption('timestamps', false, true)) ? 'true' : 'false';
+        $timestamps = ($this->getOption('timestamps', false, true)) ? 'false' : 'true';
 
         // replace in stub
         $stub = str_replace('{{connection}}', $this->stubConnection, $stub);
