@@ -362,7 +362,7 @@ class ModelFromTableCommand extends Command
         if ($this->options['schema']) {
             $query->where('TABLE_SCHEMA', $this->options['schema']);
         } else {
-            $query->whereNotIn('TABLE_SCHEMA', ['information_schema', 'mysql', 'sys']);
+            $query->whereNotIn('TABLE_SCHEMA', ['information_schema', 'mysql', 'sys', 'performance_schema']);
         }
 
         $columns = $query->get();
