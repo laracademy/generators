@@ -93,7 +93,7 @@ php artisan generate:modelfromtable --connection=spark
 ### Changing the folder where to /app/Models
 
 ```
-php artisan generate:modelfromtable --table=user --folder=app\Models
+php artisan generate:modelfromtable --table=user --folder=app/Models
 ```
 
 ## Configuration file for saving defaults, dynamic lambdas
