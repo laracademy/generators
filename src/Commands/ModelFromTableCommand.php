@@ -53,7 +53,7 @@ class ModelFromTableCommand extends Command
 
         parent::__construct();
 
-        $this->modelPath = (app()->version() > '8')? app()->path('Models') : app()->path();
+        $this->modelPath = (version_compare(app()->version(), '8', '>'))? app()->path('Models') : app()->path();
 
         $this->options = [
             'connection' => '',
